@@ -12,32 +12,81 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  res.send(books);
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
- });
+public_users.get('/isbn/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+    // Cerca direttamente l'ISBN nell'oggetto `books`
+    let book = Object.values(books).find((book) => book.isbn === isbn);
+    // Rispondi con il libro trovato o con un messaggio di errore
+    if (book) {
+      res.send(book);
+    } else {
+      res.status(404).send({ message: "Libro non trovato" });
+    }
+  });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/author/:author', function (req, res) {
+    const author = req.params.author.trim().toLowerCase(); // Normalizza l'input
+    // Cerca tutti i libri che hanno l'autore specificato
+    let booksByAuthor = Object.values(books).filter((book) => book.author.toLowerCase() === author);
+    
+    // Rispondi con i libri trovati o con un messaggio di errore
+    if (booksByAuthor.length > 0) { 
+        res.send(booksByAuthor);
+    } else {
+        return res.status(404).send({ message: "Nessun libro trovato per l'autore specificato" });
+    }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/title/:title', function (req, res) {
+    const title = req.params.title.trim().toLowerCase();
+    // Cerca tutti i libri che hanno il titolo specificato
+    let booksByTitle = Object.values(books).filter((book) => book.title.toLowerCase() === title);
+    // Rispondi con i libri trovati o con un messaggio di errore
+    if (booksByTitle.length > 0) {
+        res.send(booksByTitle);
+    } else {
+        res.status(404).send({ message: "Libro non trovato" });
+    }
 });
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const isbn = req.params.isbn;
+    // Cerca direttamente la review in base all'isbn nell'oggetto `books`
+    let book = Object.values(books).find((book) => book.isbn === isbn);
+    // Rispondi con il libro trovato o con un messaggio di errore
+    if (book) {
+      res.send(book.reviews);
+    } else {
+      res.status(404).send({ message: "Libro non trovato" });
+    }
+});
+
+// Aggiungi una recensione a un libro specifico
+public_users.post('/review/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+    const review = req.body.review; // Supponiamo che la recensione sia fornita nel corpo della richiesta
+
+    // Trova il libro in base all'ISBN
+    let book = Object.values(books).find((book) => book.isbn === isbn);
+
+    if (book) {
+        // Genera un ID univoco per la recensione
+        const reviewId = `review-${Date.now()}`;
+
+        // Aggiungi la recensione al libro
+        book.reviews[reviewId] = review;
+
+        res.send({ message: "Recensione aggiunta con successo", book });
+    } else {
+        return res.status(404).send({ message: "Libro non trovato" });
+    }
 });
 
 module.exports.general = public_users;
