@@ -10,6 +10,24 @@ app.use(express.json());
 
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
 
+app.use("/customer/auth/*", function auth(req, res, next) {
+    // Extract the token from the Authorization header
+    const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(403).json({ message: "User not logged in" });
+    }
+    // Verify the token - Make sure to use the correct secret key
+    jwt.verify(token, "myjwtsecretkey", (err, user) => { // Replace "myjwtsecretkey" with your JWT secret
+      if (err) {
+        return res.status(403).json({ message: "User not authenticated" });
+      } else {
+        req.user = user;
+        next();
+      }
+    });
+  });
+
+/*
 app.use("/customer/auth/*", function auth(req,res,next){
 if (req.session.authorization) {
     token = req.session.authorization['accessToken'];
@@ -22,10 +40,10 @@ if (req.session.authorization) {
         }
     });
   } else {
-    return res.status(403).json({ message: "Usser not logged in" });
+    return res.status(403).json({ message: "User not logged in" });
   }
 });
-
+*/
  
 const PORT =5000;
 
